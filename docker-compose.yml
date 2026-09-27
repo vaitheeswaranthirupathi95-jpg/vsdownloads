@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mediadrop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mediadrop-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MAX_FILE_SIZE_MB=500
+      - MAX_DOWNLOAD_TIME_SECONDS=600
+      - RATE_LIMIT_ANALYZE=10
+      - RATE_LIMIT_DOWNLOAD=5
+      - TEMP_FILE_TTL_MINUTES=15
+    restart: unless-stopped
