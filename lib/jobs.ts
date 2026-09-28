@@ -53,12 +53,16 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
     const ffmpegBinPath = getFfmpegPath();
     const ffmpegDir = path.dirname(ffmpegBinPath);
 
-    // Construct yt-dlp arguments for maximum download speed and direct conversion
+    // Construct yt-dlp arguments for maximum cloud download speed and direct conversion
     const args: string[] = [
       "--no-warnings",
       "--no-playlist",
+      "--force-ipv4",
+      "--socket-timeout", "30",
+      "--extractor-args", "youtube:player_client=android,web",
       "--concurrent-fragments", "5",
       "-N", "8",
+      "--no-part",
       "--max-filesize", `${MAX_FILE_SIZE_MB}M`,
       "--ffmpeg-location", ffmpegDir,
       "-o", rawFileTemplate,

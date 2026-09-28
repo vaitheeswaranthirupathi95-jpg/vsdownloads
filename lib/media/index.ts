@@ -70,7 +70,7 @@ export async function extractMetadata(rawUrl: string): Promise<AnalyzeResponse> 
   try {
     const ytDlpBin = getYtDlpPath();
     // Run yt-dlp to extract JSON metadata without downloading
-    const command = `"${ytDlpBin}" -J --no-warnings --no-playlist --dump-single-json "${url}"`;
+    const command = `"${ytDlpBin}" -J --no-warnings --no-playlist --force-ipv4 --extractor-args "youtube:player_client=android,web" --dump-single-json "${url}"`;
     const { stdout } = await execAsync(command, { maxBuffer: 1024 * 1024 * 10 });
 
     const data: YtDlpMetadata = JSON.parse(stdout);
