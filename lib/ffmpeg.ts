@@ -95,7 +95,7 @@ export function remuxOrTranscodeMp4(
         ffmpeg(inputPath)
           .videoCodec("libx264")
           .audioCodec("aac")
-          .outputOptions(["-movflags +faststart", "-y"])
+          .outputOptions(["-preset ultrafast", "-threads 0", "-movflags +faststart", "-y"])
           .on("progress", (p: { percent?: number }) => {
             if (onProgress && p.percent) {
               onProgress(Math.min(99, Math.max(0, Math.round(p.percent))));

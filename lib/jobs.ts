@@ -53,13 +53,12 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
     const ffmpegBinPath = getFfmpegPath();
     const ffmpegDir = path.dirname(ffmpegBinPath);
 
-    // Construct yt-dlp arguments for maximum cloud download speed and direct conversion
+    // Construct yt-dlp arguments for maximum download speed and direct conversion
     const args: string[] = [
       "--no-warnings",
       "--no-playlist",
       "--force-ipv4",
       "--socket-timeout", "30",
-      "--extractor-args", "youtube:player_client=android,web",
       "--concurrent-fragments", "5",
       "-N", "8",
       "--no-part",
@@ -82,9 +81,15 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
       const heightStr = req.quality.replace(/[^0-9]/g, "");
       if (heightStr) {
         const height = parseInt(heightStr, 10);
-        args.push("-f", `bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${height}]+bestaudio/best[height<=${height}]/best`);
+        args.push(
+          "-f",
+          `bestvideo[height<=${height}][vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${height}]+bestaudio/best[height<=${height}]/best`
+        );
       } else {
-        args.push("-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best");
+        args.push(
+          "-f",
+          "bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best"
+        );
       }
     }
 
