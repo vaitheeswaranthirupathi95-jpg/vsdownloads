@@ -12,6 +12,8 @@ export function DownloadProgress({ jobId }: DownloadProgressProps) {
   const [status, setStatus] = useState<JobStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const [hasTriggeredDownload, setHasTriggeredDownload] = useState(false);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
@@ -39,6 +41,19 @@ export function DownloadProgress({ jobId }: DownloadProgressProps) {
       if (timer) clearTimeout(timer);
     };
   }, [jobId]);
+
+  // Automatically trigger download when completed
+  useEffect(() => {
+    if (status?.status === "completed" && status.downloadUrl && !hasTriggeredDownload) {
+      setHasTriggeredDownload(true);
+      const link = document.createElement("a");
+      link.href = status.downloadUrl;
+      link.setAttribute("download", status.fileName || "media");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }, [status, hasTriggeredDownload]);
 
   if (error) {
     return (
@@ -105,18 +120,22 @@ export function DownloadProgress({ jobId }: DownloadProgressProps) {
       {/* Completed State */}
       {isCompleted && status.downloadUrl && (
         <div className="space-y-3 pt-2">
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm text-center font-medium">
+            Your file download has started! If it didn't begin automatically, click below.
+          </div>
+
           <a
             href={status.downloadUrl}
             download={status.fileName || "media"}
             className="w-full py-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 text-base"
           >
             <Download className="w-5 h-5" />
-            Download {status.fileName}
+            Save {status.fileName}
           </a>
 
           <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5 text-center">
             <Clock className="w-3.5 h-3.5 text-slate-500" />
-            File will be automatically removed from the server after a short period.
+            File will be automatically removed from the server after 15 minutes.
           </p>
         </div>
       )}

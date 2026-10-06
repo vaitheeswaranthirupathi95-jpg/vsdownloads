@@ -42,6 +42,7 @@ export function convertAudioToMp3(
     ffmpeg(inputPath)
       .toFormat("mp3")
       .audioBitrate(kbps)
+      .audioFrequency(44100)
       .outputOptions(["-y", "-threads 0"])
       .on("progress", (progress: { percent?: number }) => {
         if (onProgress) {

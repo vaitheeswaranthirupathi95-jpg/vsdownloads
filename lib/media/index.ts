@@ -149,7 +149,8 @@ function parseAvailableFormats(data: YtDlpMetadata): MediaFormat[] {
     }
   }
 
-  const maxDetected = Math.max(...Array.from(foundHeights), 0);
+  // Ensure at least 1080p is available as standard baseline, plus 2K and 4K if detected
+  const maxDetected = Math.max(...Array.from(foundHeights), 1080);
 
   // Add Best Available Video
   result.push({

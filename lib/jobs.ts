@@ -75,7 +75,8 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
         kbps = `${match[1]}k`;
       }
       args.push("--audio-quality", kbps);
-      args.push("-f", "bestaudio/best");
+      args.push("--postprocessor-args", `ExtractAudio:-b:a ${kbps} -ar 44100`);
+      args.push("-f", "bestaudio[asr=48000]/bestaudio/best");
     } else {
       args.push("--merge-output-format", "mp4");
       const heightStr = req.quality.replace(/[^0-9]/g, "");
@@ -83,12 +84,12 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
         const height = parseInt(heightStr, 10);
         args.push(
           "-f",
-          `bestvideo[height<=${height}][vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo[height<=${height}][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=${height}]+bestaudio/best[height<=${height}]/best`
+          `bestvideo[height<=${height}]+bestaudio/best[height<=${height}]/best`
         );
       } else {
         args.push(
           "-f",
-          "bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best"
+          "bestvideo+bestaudio/best"
         );
       }
     }
