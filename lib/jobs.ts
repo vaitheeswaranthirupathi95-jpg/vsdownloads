@@ -51,7 +51,6 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
 
     const rawFileTemplate = path.join(jobDir, "raw_media.%(ext)s");
     const ffmpegBinPath = getFfmpegPath();
-    const ffmpegDir = path.dirname(ffmpegBinPath);
 
     // Construct yt-dlp arguments for maximum download speed and direct conversion
     const args: string[] = [
@@ -59,13 +58,17 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
       "--no-playlist",
       "--force-ipv4",
       "--socket-timeout", "30",
+      "--extractor-args", "youtube:player_client=web,ios,mweb",
       "--concurrent-fragments", "5",
       "-N", "8",
       "--no-part",
       "--max-filesize", `${MAX_FILE_SIZE_MB}M`,
-      "--ffmpeg-location", ffmpegDir,
       "-o", rawFileTemplate,
     ];
+
+    if (path.isAbsolute(ffmpegBinPath) && fs.existsSync(ffmpegBinPath)) {
+      args.push("--ffmpeg-location", path.dirname(ffmpegBinPath));
+    }
 
     if (req.type === "audio") {
       args.push("-x", "--audio-format", "mp3");

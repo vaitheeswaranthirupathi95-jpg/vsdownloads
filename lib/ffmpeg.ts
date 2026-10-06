@@ -17,6 +17,14 @@ export function getFfmpegPath(): string {
     return localBin;
   }
 
+  if (fs.existsSync("/usr/bin/ffmpeg")) {
+    return "/usr/bin/ffmpeg";
+  }
+
+  if (fs.existsSync("/usr/local/bin/ffmpeg")) {
+    return "/usr/local/bin/ffmpeg";
+  }
+
   return "ffmpeg";
 }
 

@@ -1,17 +1,15 @@
-# Base Image with Node.js 20 on Alpine
-FROM node:20-alpine AS base
+# Base Image with Node.js 20 on Debian Bookworm Slim
+FROM node:20-bookworm-slim AS base
 
-# Install system dependencies: FFmpeg, Python3 (required for yt-dlp binary/execution), and curl
-RUN apk add --no-full-static --no-cache \
+# Install system dependencies: FFmpeg, Python3 (required for yt-dlp execution), and curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     python3 \
-    py3-pip \
     curl \
-    ca-certificates
-
-# Download latest yt-dlp binary into /usr/local/bin
-RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
-    chmod a+rx /usr/local/bin/yt-dlp
+    ca-certificates \
+    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+    && chmod a+rx /usr/local/bin/yt-dlp \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -36,8 +34,8 @@ ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
