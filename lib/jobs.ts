@@ -58,7 +58,6 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
       "--no-playlist",
       "--force-ipv4",
       "--socket-timeout", "30",
-      "--extractor-args", "youtube:player_client=web,ios,mweb",
       "--concurrent-fragments", "5",
       "-N", "8",
       "--no-part",
@@ -79,9 +78,10 @@ async function processJob(jobId: string, req: DownloadRequest): Promise<void> {
       }
       args.push("--audio-quality", kbps);
       args.push("--postprocessor-args", `ExtractAudio:-b:a ${kbps} -ar 44100`);
-      args.push("-f", "bestaudio[asr=48000]/bestaudio/best");
+      args.push("-f", "bestaudio/best");
     } else {
       args.push("--merge-output-format", "mp4");
+      args.push("--postprocessor-args", "Merger:-c:v copy -c:a aac");
       const heightStr = req.quality.replace(/[^0-9]/g, "");
       if (heightStr) {
         const height = parseInt(heightStr, 10);
@@ -199,6 +199,8 @@ function runYtDlpDownload(
   return new Promise((resolve, reject) => {
     const proc = spawn(bin, args);
 
+    let stderrText = "";
+
     proc.stdout.on("data", (data: Buffer) => {
       const text = data.toString();
       const match = text.match(/(\d+(?:\.\d+)?)%/);
@@ -209,6 +211,7 @@ function runYtDlpDownload(
 
     proc.stderr.on("data", (data: Buffer) => {
       const text = data.toString();
+      stderrText += text;
       const match = text.match(/(\d+(?:\.\d+)?)%/);
       if (match && match[1]) {
         onProgress(parseFloat(match[1]));
@@ -219,7 +222,8 @@ function runYtDlpDownload(
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`yt-dlp process exited with code ${code}`));
+        const snippet = stderrText.trim().split("\n").slice(-4).join(" ");
+        reject(new Error(`yt-dlp exited with code ${code}${snippet ? `: ${snippet}` : ""}`));
       }
     });
 
